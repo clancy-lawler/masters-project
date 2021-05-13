@@ -1,0 +1,76 @@
+library(ggplot2)
+library(cowplot)
+library(RColorBrewer)
+library(tidyverse)
+library(ggbeeswarm)
+library(readxl)
+library(viridis)
+library(ggpubr)
+library(rstatix)
+theme_set(theme_cowplot())
+
+setwd("~/Desktop/output/Cas9_crosses")
+fertility <- NULL
+fertility <- read_excel("y2cho2v1_RpL36.xlsx")
+fertility
+fertility_t<-NULL
+fertility_t <- gather(fertility, key = "vial", value = "offspring", vial1:vial10)
+
+##test for difference in F2 sex ratio
+stat.test <- NULL
+stat.test <- fertility_t %>%
+  group_by(source, responder)%>%
+  t_test(offspring ~ sex,
+         paired = FALSE,
+         var.equal = FALSE,
+         alternative = "two.sided",) %>%
+  adjust_pvalue(method = "bonferroni") %>% ##correct for multiple tests 
+  add_significance("p.adj") %>% ##change the significant value to *
+  add_xy_position(x = "responder", dodge = 0.8) ## add an xy position
+stat.test
+
+##test for difference in number of offspring between sgRNA individuals and control
+stat.test2 <- NULL
+stat.test2 <- fertility_t %>%
+  group_by(source)%>%
+  t_test(offspring~responder,
+         paired = FALSE,
+         var.equal = FALSE,
+         alternative = "two.sided",)%>%
+  adjust_pvalue(method = "bonferroni") %>%
+  add_significance("p.adj") %>%
+  add_xy_position(x = "responder", dodge = 0.8)
+stat.test2
+
+fertility.plot <-NULL
+fertility.plot <- ggplot(fertility_t, aes(x = responder, y = offspring)) + #loads data and sets some of the aesthetic groupings (i.e. GAL4 variable on the x-axis, etc.)
+  geom_quasirandom(aes(colour = sex), method = "quasirandom", dodge.width = 0.5, width = 0.05, size = 1.7, alpha = 0.9) + #this adds the dots
+  stat_summary(aes(group = sex), fun.y = mean, fun.ymin = mean, fun.ymax = mean, geom = "crossbar", width = 0.6, size = 0.5, colour = "black", position = position_dodge(width = 0.7)) + #creates black bar for the mean of each group
+  scale_y_continuous(limits = c(0,175), name = "offspring", expand = c(0,0)) + #varies the y-axis
+  scale_x_discrete(name = NULL ) + #removes the name of the x-axis
+  scale_colour_manual(values = c("royalblue2","red2")) + #changes the colours of the dots
+  facet_wrap(.~source, strip.position = "bottom") +
+  #breaks up the plot into two parts based on the genes, and places gene name on bottom not top
+  theme(
+    strip.placement = "outside",
+    strip.background = element_blank(),
+    strip.text = element_text(face = "bold")
+  ) + #various theme changes
+  coord_cartesian(clip = "off") #removes clipping issues due to "expand" argument
+
+
+fertility.plot.comlex <-NULL ##create figure with the significance values on it
+fertility.plot.comlex <- fertility.plot + 
+  stat_pvalue_manual(
+    stat.test2,
+    label = "{p.adj.signif}", 
+    tip.length = 0, 
+    hide.ns = T
+  )+
+  stat_pvalue_manual(
+    stat.test,
+    label = "{p.adj.signif}", 
+    tip.length = 0, 
+    hide.ns = T
+  )
+fertility.plot.comlex
