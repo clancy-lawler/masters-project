@@ -1,0 +1,288 @@
+initialize() {
+	initializeSLiMModelType("nonWF");
+	initializeSLiMOptions(dimensionality="xy");
+	
+	if (exists("slimgui")) {
+		defineConstant("RELEASE", 100); 
+		defineConstant("GENERATION", 1);
+		defineConstant("MOVEMENT", 0.2); 
+	}
+	
+
+	defineConstant("bias", 0.9);
+	defineConstant("COST", 0.0); 
+	defineConstant("D", 0.005); 
+	defineConstant("choice", 0.0); 
+	defineConstant("var", 0.0695); 
+	defineConstant("K",10); 
+	defineConstant("K2", 2000); 
+	defineConstant("Y_pos", 50000); 
+	defineConstant("L", c(1, 1, 1, 1, 1, 1, 1, 1, 0)); 
+	
+	defineConstant("no_pseudo_subpops", 100);
+	defineConstant("S", 0.3);   
+	
+
+	initializeSex("A");	
+	
+
+	initializeMutationRate(0); 
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeMutationType("m2", 0.5, "f", 0.0);
+	initializeMutationType("m3", 1.0, "f", 0.0); 
+	initializeMutationType("m4", 1.0, "f", COST); 
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElementType("g2", m2, 1.0);
+	initializeGenomicElement(g1, 0, 24999);
+	initializeGenomicElement(g2, 25000, 99999);
+	initializeRecombinationRate(c(1e-8, 0), c(24999, 99999), sex="M");
+	initializeRecombinationRate(1e-8, sex="F");
+	
+	m3.color = "green";
+	m4.color = "red";
+	
+
+	initializeInteractionType(1, "xy", reciprocal=T, maxDistance=S);
+	
+
+	initializeInteractionType(2, "xy", reciprocal=T, maxDistance=2*MOVEMENT);
+}
+
+reproduction(p1, "F") {
+	mut = sim.mutationsOfType(m4); 
+	neighbours = i2.nearestNeighbors(individual, 40); 
+	potential_mate = neighbours[neighbours.sex == "M"]; 
+	potential_mate = potential_mate[potential_mate.age > 0]; 
+	if(individual.age > 0){  
+		
+		if(potential_mate.size()){
+			selected_mate1 = sample(potential_mate, 1);
+			selected_mate2 = sample(potential_mate, 1);
+			
+			mate_attractiveness1 = ((selected_mate1.countOfMutationsOfType(m4) * choice) + 1.1)+ rnorm(1, 0, var);
+			mate_attractiveness2 = ((selected_mate2.countOfMutationsOfType(m4) * choice) + 1.1)+ rnorm(1, 0, var);
+			
+
+			attempt_no = 0;
+			while (1) {
+				if (!selected_mate1.size()) 
+					return;
+				if (mate_attractiveness1 >= 1.1) 
+					break;
+				if (mate_attractiveness1 > 1  & mate_attractiveness2 > 1) 
+					break;
+				attempt_no = attempt_no + 1;
+				if (attempt_no == 9)
+					return;
+			}
+			
+			if (sim.generation % 10 == 0) 
+				litterSize = 0;
+			else
+				litterSize = asInteger(rnorm(1, 5, 1));
+			
+			first_mate = asInteger(litterSize * 0.2); 
+			second_mate = asInteger(litterSize*0.8); 
+			if (mate_attractiveness1 > 1 & mate_attractiveness1 < 1.1 & mate_attractiveness2 > 1)
+			{ 
+				for (j in seqLen(first_mate)){
+					if (selected_mate1.containsMutations(mut))
+						subpop.addCrossed(individual, selected_mate1, bias);
+					if (!selected_mate1.containsMutations(mut))
+						subpop.addCrossed(individual, selected_mate1);
+				}
+				for (i in seqLen(second_mate)){
+					if (selected_mate2.containsMutations(mut))
+						subpop.addCrossed(individual, selected_mate2, bias);
+					if (!selected_mate2.containsMutations(mut))
+						subpop.addCrossed(individual, selected_mate2);
+				}
+			}
+			if (mate_attractiveness1 >= 1.1){ 
+				for(i in seqLen(litterSize)){
+					if (selected_mate1.containsMutations(mut))
+						subpop.addCrossed(individual, selected_mate1, bias);
+					if (!selected_mate1.containsMutations(mut))
+						subpop.addCrossed(individual, selected_mate1);
+				}
+			}
+		}
+	}
+}
+
+
+reproduction(p2, "F") { 
+	mate = subpop.sampleIndividuals(1, sex="M", minAge = 1);
+	litterSize = rnorm(1, 100, 5);
+	for (i in (litterSize))
+		offspring = subpop.addCrossed(individual, mate);
+}
+
+1 early() {
+	sim.addSubpop("p1", 100); 
+	sim.subpopulations.individuals.age = rdunif(100, min=0, max=4);
+	i = p1.individuals;
+	i[i.sex == "M"].genome2.addNewMutation(m3, 0.0, 99999); 
+	p1.setSpatialBounds(c(0.0, 0.0, 10.0, 10.0));
+	p1.individuals.x = runif(p1.individualCount, 0, MOVEMENT); 
+	p1.individuals.y = runif(p1.individualCount, 0, MOVEMENT);
+
+}
+
+1 early () {
+	sim.addSubpop("p2", K2);
+	p2.individuals.age = rdunif(K2, min=0, max=3);
+	i = p2.individuals;
+	i[i.sex == "M"].genome2.addNewMutation(m4, 0.0, Y_pos);
+	i[i.sex == "M"].genome2.addNewMutation(m3, 0.0, 99999);
+}
+
+early(){
+	allinds = p1.individuals;
+	allinds.color = "white";
+	allinds[allinds.countOfMutationsOfType(m4) == 1].color = "red";
+}
+
+modifyChild(p1) {
+	do child.x = parent1.x + rnorm(1, 0, D);
+	while ((child.x < 0.0) | (child.x > 10.0));
+	do child.y = parent1.y + rnorm(1, 0, D);
+	while ((child.y < 0.0) | (child.y > 10.0));
+	return T;
+}
+
+modifyChild(){
+	if (child.sex == "F")
+		return !childGenome2.containsMarkerMutation(m3, 99999);
+	else
+		return childGenome2.containsMarkerMutation(m3, 99999);
+}
+
+10:110 early () {
+	if (sim.generation % GENERATION == 0){//individuals are released every multiple of the release frequency
+		inds = p1.individuals;
+		drive = inds[inds.countOfMutationsOfType(m4) == 1];
+		not_drive = inds[inds.countOfMutationsOfType(m4) == 0];
+		max_x_value = max(not_drive.x);
+		max_y_value = max(not_drive.y); 
+		
+		if (size(not_drive) > 10){
+			RELEASE_multi = asInteger(RELEASE/(100/GENERATION));
+			drive_inds = p2.sampleIndividuals(RELEASE_multi, sex = "M");
+			p1.takeMigrants(drive_inds);
+			
+			for (inds in drive_inds){
+				inds.x=runif(1, 0, MOVEMENT);//release individuals placed at incursion point 
+				inds.y=runif(1, 0, MOVEMENT);
+			}
+		}
+	}
+}
+
+late(){
+	i2.evaluate();
+	i1.evaluate();
+}
+
+1 late(){	tag0=matrix(rep(0,100), nrow=10);
+	defineConstant("tag1", tag0);
+}
+2:late() {
+
+	p2_inds = p2.individuals;
+	p2_ages = p2_inds.age;
+	mortality = L[p2_ages];
+	survival = mortality;
+	p2_inds.fitnessScaling = survival;
+	p2.fitnessScaling = (K2) / (p2.individualCount * mean(survival));
+	
+	inds = p1.individuals;
+	age_mortality = L[inds.age];
+	competition = i1.totalOfNeighborStrengths(inds);
+	competition = (competition + 1) / (PI*S^2);
+	inds.fitnessScaling = (K / competition) * age_mortality;
+	if (sim.generation % 10 == 0)
+		inds.fitnessScaling = ((K / competition) * age_mortality) * 0.6;
+	
+	
+	for (ind in p1.individuals)
+	{
+		if(ind.fitnessScaling >0){
+			do newPos = ind.spatialPosition + rnorm(2, 0.0, MOVEMENT);
+			while (!p1.pointInBounds(newPos));
+			ind.setSpatialPosition(newPos);
+		}
+	}
+	
+	nondrive = inds[inds.countOfMutationsOfType(m4) == 0];
+	nondrive_males = size(nondrive[nondrive.sex == "M"]);
+	drive = inds[inds.countOfMutationsOfType(m4) == 1];
+	nonx = nondrive.x;
+	nony = nondrive.y;
+	drivex = drive.x;
+	drivey = drive.y;
+	allx = inds.x;
+	ally = inds.y;
+	pos_vec = 0:(sqrt(no_pseudo_subpops) - 1);
+	dim = length(pos_vec);
+	cell_width = 1.0;
+	positions = pos_vec * cell_width;
+	nondrive_track = c();
+	all_track = c();
+	
+	
+	
+	for (i in 0:(dim-1)) {
+		div_left = positions[i];
+		for (j in 0:(dim-1)) {
+			div_bot = positions[j];
+			nondrive_in_division = (nonx >= div_left) & (nonx < (div_left + cell_width)) & (nony >= div_bot) & (nony < (div_bot + cell_width));
+			drive_in_division = (drivex >= div_left) & (drivex < (div_left + cell_width)) & (drivey >= div_bot) & (drivey < (div_bot + cell_width));
+			
+			nondrive_in_cell = nondrive[nondrive_in_division];
+			drive_in_cell = drive[drive_in_division];
+			
+			nondrive_cell_count = size(nondrive_in_cell); //number in this cell
+			drive_cell_count = size(drive_in_cell);
+			
+			if(drive_cell_count > 0 &	nondrive_cell_count > 0)
+				tag1[i,j] = 1;
+			if(tag1[i,j] == 1 & drive_cell_count == 0 &	nondrive_cell_count == 0)
+				tag1[i,j] = -1;
+			if(tag1[i,j] == -1 & nondrive_cell_count != 0)
+				tag1[i,j] = 3;
+			if(tag1[i,j] == 3 & drive_cell_count != 0)
+				tag1[i,j] = 2;
+		
+		}
+	}
+	if (p1.individualCount < 2 & any(tag1 ==2)){
+		catn(sim.generation + " " + "incursion" + " " + "multi" + " " + "x_shredder" + " " + "y" + " " + "fixed");
+		sim.simulationFinished();
+	}
+	if (p1.individualCount < 2 & all(tag1 !=2)){
+		catn(sim.generation + " " + "incursion" + " " + "multi" + " " + "x_shredder" + " " + "n" + " " + "fixed");
+		sim.simulationFinished();
+	}
+}
+
+
+110: late(){
+	mut = sim.mutationsOfType(m4);
+	if (sim.mutationFrequencies(p1, mut) == 0 & any(tag1 ==2)){
+		catn(sim.generation + " " + "incursion" + " " + "multi" + " " + "x_shredder" + " " + "y" + " " +  "lost");
+		sim.simulationFinished();
+	}
+	if (sim.mutationFrequencies(p1, mut) == 0 & all(tag1 !=2)){
+		catn(sim.generation + " " + "incursion" + " " + "multi" + " " + "x_shredder" + " " + "n" + " " +  "lost");
+		sim.simulationFinished();
+	}
+}
+
+210 late (){
+	if(any(tag1 == 2))
+		catn(sim.generation + " " + "incursion" + " " + "multi" + " " + "x_shredder" + " " + "y" +  " " + "stable");
+	if(all(tag1 != 2))
+		catn(sim.generation + " " + "incursion" + " " + "multi" + " " + "x_shredder" + " " + "n" + " " + "stable");
+	sim.simulationFinished();
+}
