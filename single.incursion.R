@@ -1,0 +1,292 @@
+library(plyr)
+library(tidyr)
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(viridis)
+library(lattice)
+library(gtable)
+library(gridExtra)
+library("ggpubr")
+
+
+#set working direct
+setwd("~/Desktop/output/simulations_for_spartan/combination_data_sets/continuous")
+
+load("single.x_0.RData")
+
+single.x_0 = single.x_0[(single.x_0$drive_type == "SIT" | single.x_0$drive_type == "haplolethal"),]
+
+single.x_0 <- rbind(single.x_0, single_release.incursion.x_shredder)
+
+drive.type.vec <- c("SIT", "haplolethal", "x_shredder")
+################################################################################
+##################### FILL = FIXED #######################################
+################################################################################
+
+movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986) ##define vector of mmovement values 
+pltList2 <- list(list(1,2,3,4,5), list(1,2,3,4,5), list(1,2,3,4,5)) ##create the list structure to hold figures 
+drive.type.vec <- c("SIT", "haplolethal", "x_shredder") ##create a vector of the different drive types 
+
+##iterate over each drive time and selected movement value 
+for(i in 1:length(movement.vector)){
+  for(j in 1:length(drive.type.vec)){
+    temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),]
+    temp = temp[(temp$movement == movement.vector[i]),]
+    
+    if(i==1 && j == 1){ ##specific positions within the list structure have axis titles
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + ## the x axis is release sixe, y axis is release generation 
+        geom_tile(aes(fill= fixed)) + ##fill is the proportion of simulations that went to fixation (population eradication)
+        theme(
+          axis.title.x = element_blank(),
+          axis.text.x = element_blank(),
+          plot.title = element_text(face = "plain", hjust=0.5, vjust = 0, size = 12))+
+        ylab("SIT\n\nRelease generation")+
+        ggtitle("low")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    
+    if(i==2 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        theme(axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              plot.title = element_text(face = "plain", hjust=0.5, vjust = 0,  size = 12))+
+        ggtitle("medium-low")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    
+    if(i==3 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        theme(axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              plot.title = element_text(face = "plain", hjust=0.5, vjust = 0, size = 12))+
+        ggtitle("medium")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    
+    if(i==4 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        theme(axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              plot.title = element_text(face = "plain", hjust=0.5, vjust = 0, size = 12))+
+        ggtitle("medium-high")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    
+    if(i==5 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        theme(axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              plot.title = element_text(face = "plain", hjust = 0.5 , size = 12))+
+        ggtitle("high")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    
+    if(i==1 && j == 2){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        theme(
+          axis.title.x = element_blank(),
+          axis.text.x = element_blank())+
+        ylab("Haplolethal\n\nRelease generation")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    
+    if(i==1 && j == 3){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        ylab("X shredder\n\nRelease generation")+
+        xlab("Release size")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    
+    
+    if (i > 1 && j == 2){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        theme(axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              axis.title.x = element_blank(),
+              axis.text.x = element_blank())+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+    if (i > 1 && j ==  3){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y=release_gen )) + 
+        geom_tile(aes(fill= fixed)) +
+        theme(axis.title.y =element_blank(),
+              axis.text.y = element_blank())+
+        xlab("Release size")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Eradication"
+    }
+  }
+}
+##create a combination figure that includes all 15 heat maps. 
+comb.figure <- 
+  ggarrange(
+    pltList2[[1]][[1]], pltList2[[1]][[2]], pltList2[[1]][[3]], pltList2[[1]][[4]], pltList2[[1]][[5]],
+    pltList2[[2]][[1]], pltList2[[2]][[2]], pltList2[[2]][[3]], pltList2[[2]][[4]], pltList2[[2]][[5]],
+    pltList2[[3]][[1]], pltList2[[3]][[2]], pltList2[[3]][[3]], pltList2[[3]][[4]], pltList2[[3]][[5]],
+    ncol = 5,
+    nrow = 3,
+    widths = c(1.4,1,1,1,1,
+               1.4,1,1,1,1,
+               1.4,1,1,1,1),
+    heights = c(1.4,1.4,1.4,1.4,1.4,
+                0.2,0.2,0.2,0.2,0.2,
+                1.7,1.7,1.7,1.7,1.7),
+    common.legend = TRUE, legend = "right")
+comb.figure
+
+########################################################################################################################
+####################################################################################################
+################### for persistence check ############################################################
+#################################################################################################
+########################################################################################################################
+
+movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986)
+pltList2 <- list(list(1,2,3,4,5), list(1,2,3,4,5)) ## as SIT cannot persist, the list only has two rows of 5
+drive.type.vec <- c("haplolethal", "x_shredder") ## as only the X shredder and haplolethal drive can persist within the population, the drive type vecter only include the two
+
+##iterate over this for each drive typre within the drive vector aand for each movement speed
+for(i in 1:length(movement.vector)){
+  for(j in 1:length(drive.type.vec)){
+    temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),]
+    temp = temp[(temp$movement == movement.vector[i]),]
+    
+    if(i==2 && j == 1){##specific figures have different axis titles or figure titles 
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y= release_gen )) + ##the x axis is release size and the y axis is release generation
+        geom_tile(aes(fill= stable)) + ##create a heat map. the fill is either persistence of the drive (stable) or occurrence of chase (chase_y)
+        theme(axis.title.x =element_blank(),
+              axis.text.x = element_blank(),
+              axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              plot.title = element_text(face = "plain", hjust=0.5, vjust = 0,  size = 12))+
+        ggtitle("medium-low")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Persistance" ##change the figure legend to reflect the fill of the heat map
+    }
+    
+    if(i==3 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y= release_gen )) +
+        geom_tile(aes(fill= stable)) +
+        theme(axis.title.x =element_blank(),
+              axis.text.x = element_blank(),
+              axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              plot.title = element_text(face = "plain", hjust=0.5, vjust = 0, size = 12))+
+        ggtitle("medium")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Persistance"
+    }
+    
+    if(i==4 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y= release_gen )) +
+        geom_tile(aes(fill= stable)) +
+        theme(axis.title.x =element_blank(),
+              axis.text.x = element_blank(),
+              axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              plot.title = element_text(face = "plain", hjust=0.5, vjust = 0, size = 12))+
+        ggtitle("medium-high")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Persistance"
+    }
+    
+    if(i==5 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y= release_gen )) +
+        geom_tile(aes(fill= stable)) +
+        theme(axis.title.x =element_blank(),
+              axis.text.x = element_blank(),
+              axis.title.y =element_blank(),
+              axis.text.y = element_blank(),
+              plot.title = element_text(face = "plain", hjust = 0.5 , size = 12))+
+        ggtitle("high")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Persistance"
+    }
+    
+    if(i==1 && j == 1){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y= release_gen )) +
+        geom_tile(aes(fill= stable)) +
+        theme(axis.title.x =element_blank(),
+              axis.text.x = element_blank(),
+              plot.title = element_text(face = "plain", hjust = 0.5 , size = 12))+
+        ylab("Haplolethal\n\nRelease generation")+
+        ggtitle("low")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Persistance"
+    }
+    
+    if(i==1 && j == 2){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y= release_gen )) +
+        geom_tile(aes(fill= stable)) +
+        ylab("X shredder\n\nRelease generation")+
+        xlab("Release size")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Persistance"
+    }
+    
+    if (i > 1 && j ==  2){
+      pltList2[[j]][[i]]<-temp %>%
+        ggplot(., aes(x=release_size, y= release_gen )) +
+        geom_tile(aes(fill= stable)) +
+        
+        theme(axis.title.y =element_blank(),
+              axis.text.y = element_blank())+
+        xlab("Release size")+
+        scale_fill_viridis(discrete = F, option = "inferno", limits=c(floor(0), ceiling(1)))
+      pltList2[[j]][[i]]$labels$fill <- "Persistance"
+    }
+  }
+}
+##create a combination figure for the persistance or chase 
+comb.figure <- 
+  ggarrange(
+    pltList2[[1]][[1]], pltList2[[1]][[2]], pltList2[[1]][[3]], pltList2[[1]][[4]], pltList2[[1]][[5]],
+    pltList2[[2]][[1]], pltList2[[2]][[2]], pltList2[[2]][[3]], pltList2[[2]][[4]], pltList2[[2]][[5]],
+    ncol = 5,
+    nrow = 2,
+    widths = c(1.4,1,1,1,1,
+               1.4,1,1,1,1),
+    heights = c(1,1,1,1,1,
+                1.55,1.55,1.55,1.55,1.55),
+    label.x = "Release size",
+    common.legend = TRUE, legend = "right")
+
+comb.figure
