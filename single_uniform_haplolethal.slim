@@ -146,7 +146,7 @@ modifyChild(){
 		return childGenome2.containsMarkerMutation(m3, 99999);
 }
 
-modifyChild(p1){
+modifyChild(p1){//haplolethal drive carriers can only have male offspring and all male offspring carry the gene drive 
 	mut = sim.mutationsOfType(m4);
 	carry = parent2.containsMutations(mut);
 	if (carry & child.sex == "F")
