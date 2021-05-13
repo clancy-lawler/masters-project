@@ -53,7 +53,7 @@ initialize() {
 	initializeInteractionType(2, "xy", reciprocal=T, maxDistance=2*MOVEMENT);
 }
 
-///////////////code within this section is adapted from the champer paper //////////////////////////////////////
+///////////////code within this section is adapted from Champer, S., Oh, S., Liu, C., Wen, Z., Clark, A., Messer, P. and Champer, J., 2020. Computational and experimental performance of CRISPR homing gene drive strategies with multiplexed gRNAs. Science Advances, 6(10), p.eaaz0525. //////////////////////////////////////
 
 reproduction(p1, "F") {
 	mut = sim.mutationsOfType(m4);//drive mutation
@@ -212,6 +212,8 @@ late(){//evalue at interacting individuals
 	tag0=matrix(rep(0,100), nrow=10);
 	defineConstant("tag1", tag0);
 }
+
+//////////////////////////////code within this section is adapted from Champer, J., Kim, I., Champer, S., Clark, A. and Messer, P., 2019. Suppression gene drive in continuous space can result in unstable persistence of both drive and wild-type alleles.///////////
 2:late() {
 	
 	// life table based individual mortality for the sourse population 
