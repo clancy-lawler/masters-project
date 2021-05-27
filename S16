@@ -24,11 +24,11 @@ drive.type.vec <- c("SIT", "haplolethal", "x_shredder")
 ##################### FILL = FIXED #######################################
 ################################################################################
 
-movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986) ##define vector of mmovement values 
+movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986) ##define vector of movement values 
 pltList2 <- list(list(1,2,3,4,5), list(1,2,3,4,5), list(1,2,3,4,5)) ##create the list structure to hold figures 
 drive.type.vec <- c("SIT", "haplolethal", "x_shredder") ##create a vector of the different drive types 
 
-##iterate over each drive time and selected movement value 
+##iterate over each drive time and selected movement value and drive type
 for(i in 1:length(movement.vector)){
   for(j in 1:length(drive.type.vec)){
     temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),]
@@ -152,13 +152,13 @@ for(i in 1:length(movement.vector)){
 }
 ##create a combination figure that includes all 15 heat maps. 
 comb.figure <- 
-  ggarrange(
+  ggarrange(##call the figures held in the list.
     pltList2[[1]][[1]], pltList2[[1]][[2]], pltList2[[1]][[3]], pltList2[[1]][[4]], pltList2[[1]][[5]],
     pltList2[[2]][[1]], pltList2[[2]][[2]], pltList2[[2]][[3]], pltList2[[2]][[4]], pltList2[[2]][[5]],
     pltList2[[3]][[1]], pltList2[[3]][[2]], pltList2[[3]][[3]], pltList2[[3]][[4]], pltList2[[3]][[5]],
-    ncol = 5,
+    ncol = 5, ## specify the structure of the combined figure
     nrow = 3,
-    widths = c(1.4,1,1,1,1,
+    widths = c(1.4,1,1,1,1, ##specify some heights and widths
                1.4,1,1,1,1,
                1.4,1,1,1,1),
     heights = c(1.4,1.4,1.4,1.4,1.4,
@@ -173,11 +173,11 @@ comb.figure
 #################################################################################################
 ########################################################################################################################
 
-movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986)
+movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986) ##create a vector of movement speeds
 pltList2 <- list(list(1,2,3,4,5), list(1,2,3,4,5)) ## as SIT cannot persist, the list only has two rows of 5
 drive.type.vec <- c("haplolethal", "x_shredder") ## as only the X shredder and haplolethal drive can persist within the population, the drive type vecter only include the two
 
-##iterate over this for each drive typre within the drive vector aand for each movement speed
+##iterate over this for each drive typre within the drive vector and for each movement speed
 for(i in 1:length(movement.vector)){
   for(j in 1:length(drive.type.vec)){
     temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),]
@@ -277,7 +277,7 @@ for(i in 1:length(movement.vector)){
 }
 ##create a combination figure for the persistance or chase 
 comb.figure <- 
-  ggarrange(
+  ggarrange( ##call the list used to hold figures 
     pltList2[[1]][[1]], pltList2[[1]][[2]], pltList2[[1]][[3]], pltList2[[1]][[4]], pltList2[[1]][[5]],
     pltList2[[2]][[1]], pltList2[[2]][[2]], pltList2[[2]][[3]], pltList2[[2]][[4]], pltList2[[2]][[5]],
     ncol = 5,
