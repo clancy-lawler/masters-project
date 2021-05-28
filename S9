@@ -1,8 +1,8 @@
 initialize() {
-	initializeSLiMModelType("nonWF");
-	initializeSLiMOptions(dimensionality="xy");
+	initializeSLiMModelType("nonWF"); // set the simulation to a non-Wright-Fisher Model
+	initializeSLiMOptions(dimensionality="xy");// include dimentionality in the model
 	
-	//define variables to be tested 
+	//define variables to be tested - these are used as the default if the simulation is run in SLiM
 	if (exists("slimgui")) {
 		defineConstant("RELEASE", 100); //number of release individuals 
 		defineConstant("GENERATION", 15); //drive release generation
@@ -10,11 +10,11 @@ initialize() {
 	}
 	
 	//define constants
-	defineConstant("bias", 0.999);
-	defineConstant("COST", 0.0); //between 0 and -1 
-	defineConstant("D", 0.005); //proximity to mother - measued as a proportion of simulated space 
-	defineConstant("choice", 0.0); //the proportional reduction in likelihood of being chosen as a mate 
-	defineConstant("var", 0.0695); //the sd of the draw rnorm(1, 0, var) that is added to mate choice - represents the variation in mate chose for all genotype
+	defineConstant("bias", 0.999); //degree of offsrping sex ratio biasing in X shredder containing individuals 
+	defineConstant("COST", 0.0); //between 0 and -1 - set to 0 for all models used 
+	defineConstant("D", 0.005); //the SD for the normal draw that defines offsirng proximity to mother - measued as a proportion of simulated space 
+	defineConstant("choice", 0.0); //the proportional reduction in likelihood of being chosen as a mate - set to zero in these models
+	defineConstant("var", 0.0695); //the sd of the draw rnorm(1, 0, var) that is added to mate choice - represents the variation in mate chose for all genotype and results in the remating requency 
 	defineConstant("K",10); // related to maximum number of individuals in P1 though interaction with competition and age based mortality
 	defineConstant("K2", 2000); //drive source carying capacity. Source population has simple dynamics
 	defineConstant("Y_pos", 50000); // male marker mutation
@@ -124,7 +124,7 @@ reproduction(p1, "F") {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-reproduction(p2, "F") { // the sourse population reproduced simply and randomly within the population
+reproduction(p2, "F") { // the sourse population reproduction - simply and randomly within the population
 	mate = subpop.sampleIndividuals(1, sex="M", minAge = 1);
 	litterSize = rnorm(1, 100, 5);
 	for (i in (litterSize))
@@ -138,7 +138,7 @@ reproduction(p2, "F") { // the sourse population reproduced simply and randomly 
 	i = p1.individuals;
 	i[i.sex == "M"].genome2.addNewMutation(m3, 0.0, 99999); //marker mutation of the males
 	p1.setSpatialBounds(c(0.0, 0.0, 10.0, 10.0)); // set the space to be a square 10x10
-	p1.individuals.x = runif(p1.individualCount, 0, MOVEMENT);//starting postions are uniform between x,y 0,0 and one generation of movement
+	p1.individuals.x = runif(p1.individualCount, 0, MOVEMENT);//starting postions are uniform between 0,0 and one generation of movement
 	p1.individuals.y = runif(p1.individualCount, 0, MOVEMENT);
 	
 
@@ -169,7 +169,7 @@ modifyChild(p1) {
 }
 
 modifyChild(){
-	// make sure males contain male marker mutation
+	// make sure males contain male marker mutation - this is used to make sure there is direct paternal inheritance 
 	if (child.sex == "F")
 		return !childGenome2.containsMarkerMutation(m3, 99999);
 	else
@@ -178,15 +178,15 @@ modifyChild(){
 
 10:110 early () { //individuals can be released between generation 10 and 110
 	inds = p1.individuals;
-	drive = inds[inds.countOfMutationsOfType(m4) == 1];
-	not_drive = inds[inds.countOfMutationsOfType(m4) == 0];
+	drive = inds[inds.countOfMutationsOfType(m4) == 1]; //identify all the drive individuals
+	not_drive = inds[inds.countOfMutationsOfType(m4) == 0]; //identify all non-drive individuals
 	max_x_value = max(not_drive.x);
 	max_y_value = max(not_drive.y); //the release is uniformly distributed over all areas with suzukii
 	//using the value of the furthest traveled individual as the radius for release 
 	
-	if (sim.generation == (GENERATION + 10))
+	if (sim.generation == (GENERATION + 10)) //if the simulation generation equals the relase generation plus the initial burn in period then release drive individuals 
 		if (size(not_drive) > 10){//release only if there is a detectable number of individuals within the population
-			drive_inds = p2.sampleIndividuals(RELEASE, sex = "M");
+			drive_inds = p2.sampleIndividuals(RELEASE, sex = "M"); //population 2 is used as the source of the gene drive. 
 			p1.takeMigrants(drive_inds);
 			
 			if(max_x_value - max_y_value > 0) //define the release radious
@@ -208,7 +208,7 @@ late(){//evalue at interacting individuals
 	i1.evaluate();
 }
 
-1 late(){//set a matrix to monitor the occurence of chase within the pseudo subpopulations
+1 late(){//set a matrix to monitor the occurence of chase within the pseudo subpopulations. This matrix has the same dimentions as the pseudo-subpopulation structure 
 	tag0=matrix(rep(0,100), nrow=10);
 	defineConstant("tag1", tag0);
 }
@@ -244,8 +244,7 @@ late(){//evalue at interacting individuals
 			ind.setSpatialPosition(newPos);
 		}
 	}
-	
-	/////////////////////////////////// code within this section is adapted from the champer paper /////////////////	
+		
 	nondrive = inds[inds.countOfMutationsOfType(m4) == 0];//identify all non-drive individuals 
 	nondrive_males = size(nondrive[nondrive.sex == "M"]);
 	drive = inds[inds.countOfMutationsOfType(m4) == 1];//identify all drive individuals 
@@ -257,13 +256,13 @@ late(){//evalue at interacting individuals
 	ally = inds.y;
 	pos_vec = 0:(sqrt(no_pseudo_subpops) - 1); //vector for the pseudo subpops
 	dim = length(pos_vec);
-	cell_width = 1.0; // define space of each pseudo subpopulation
+	cell_width = 1.0; // define space of each pseudo subpopulation - the simulated space is 10x10
 	positions = pos_vec * cell_width;
 	nondrive_track = c();
 	all_track = c();
 	
 	
-	
+	//identify the drive and non-drive individuals in the pseudo sub-pop
 	for (i in 0:(dim-1)) {
 		div_left = positions[i];
 		for (j in 0:(dim-1)) {
@@ -277,6 +276,8 @@ late(){//evalue at interacting individuals
 			nondrive_cell_count = size(nondrive_in_cell); //the number of non drive individuals in the cell 
 			drive_cell_count = size(drive_in_cell); // the number of drive individuals within the cell 
 			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 			if(drive_cell_count > 0 &	nondrive_cell_count > 0) 
 				tag1[i,j] = 1;// track if the pseudo subpop has both drive and non-drive individuals present
 			if(tag1[i,j] == 1 & drive_cell_count == 0 &	nondrive_cell_count == 0)
@@ -288,7 +289,7 @@ late(){//evalue at interacting individuals
 		
 		}
 	}
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
 	if (p1.individualCount < 2 & any(tag1 ==2)){//if p1 has less then 2 individuals present, population has been eradicated and the simulation ends. note if chase has occured
 		catn(sim.generation + " " + "optomised" + " " + "single" + " " + "x_shredder" + " " + "y" + " " + "fixed");
 		sim.simulationFinished();
