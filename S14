@@ -9,14 +9,14 @@ library(ggpubr)
 library(rstatix)
 theme_set(theme_cowplot())
 
-setwd("~/Desktop/output/Cas9_crosses")
+setwd("~/Desktop/output/Cas9_crosses") ##import data
 fertility <- NULL
 fertility <- read_excel("y2cho2v1_RpL36.xlsx")
 fertility
 fertility_t<-NULL
 fertility_t <- gather(fertility, key = "vial", value = "offspring", vial1:vial10)
 
-##test for difference in F2 sex ratio
+##test for difference in sex ratio
 stat.test <- NULL
 stat.test <- fertility_t %>%
   group_by(source, responder)%>%
@@ -25,7 +25,7 @@ stat.test <- fertility_t %>%
          var.equal = FALSE,
          alternative = "two.sided",) %>%
   adjust_pvalue(method = "bonferroni") %>% ##correct for multiple tests 
-  add_significance("p.adj") %>% ##change the significant value to *
+  add_significance("p.adj") %>% ## uses the bonferroni corrected significance and change the significant value to *
   add_xy_position(x = "responder", dodge = 0.8) ## add an xy position
 stat.test
 
@@ -61,11 +61,11 @@ fertility.plot <- ggplot(fertility_t, aes(x = responder, y = offspring)) + #load
 
 fertility.plot.comlex <-NULL ##create figure with the significance values on it
 fertility.plot.comlex <- fertility.plot + 
-  stat_pvalue_manual(
+  stat_pvalue_manual(##manually add the significance
     stat.test2,
     label = "{p.adj.signif}", 
     tip.length = 0, 
-    hide.ns = T
+    hide.ns = T ##hide the non-significant values 
   )+
   stat_pvalue_manual(
     stat.test,
