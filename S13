@@ -17,6 +17,22 @@ fertility
 fertility_t<-NULL
 fertility_t <- gather(fertility, key = "vial", value = "offspring", vial1:vial8)
 
+for(i in 1:length(fertility_t$responder)){
+  if (fertility_t$responder[i] == "sgRNA"){
+    fertility_t$responder[i] = "Cas9\n+\ngRNA"
+  }
+  if (fertility_t$responder[i] == "control"){
+    fertility_t$responder[i] = "Cas9\n+\ngRNA control"
+  }
+  if (fertility_t$source  [i] == "RpL36 RpL35"){
+    fertility_t$source[i] = "pRpL36_RpL35"
+  }
+  if (fertility_t$source  [i] == "RpS19a RpL35"){
+    fertility_t$source[i] = "pRpS19a_RpL35"
+  }
+}
+fertility_t
+
 ##test the different in mean number of generated offspring of individuals with or without sgRNAs
 stat.test <- NULL
 stat.test <- fertility_t %>%
