@@ -16,6 +16,31 @@ fertility
 fertility_t<-NULL
 fertility_t <- gather(fertility, key = "vial", value = "offspring", vial1:vial10)
 
+
+for(i in 1:length(fertility_t$responder)){ ##fix the poorly formated excel data
+  if (fertility_t$responder[i] == "sgRNA"){
+    fertility_t$responder[i] = "gRNA"
+  }
+  if (fertility_t$responder[i] == "control"){
+    fertility_t$responder[i] = "gRNA control"
+  }
+  if (fertility_t$sex[i] == "F2 male Cas9"){
+    fertility_t$sex[i] = "Male"
+  }
+  if (fertility_t$sex[i] == "F2 female Cas9"){
+    fertility_t$sex[i] = "Female"
+  }
+  if(fertility_t$source[i] == "F1 female"){
+    fertility_t$source[i] = "Oogenic Cas9"
+  }
+  if(fertility_t$source[i] == "F1 male"){
+    fertility_t$source[i] = "Spermatogenic Cas9"
+  }
+}
+fertility_t
+
+
+
 ##test for difference in sex ratio
 stat.test <- NULL
 stat.test <- fertility_t %>%
