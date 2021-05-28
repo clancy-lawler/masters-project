@@ -23,26 +23,25 @@ stat.test <- fertility_t %>%
   group_by(source)%>%
   t_test(offspring~responder)%>%
   adjust_pvalue(method = "bonferroni") %>%
-  add_significance("p")%>%
+  add_significance("p.adj")%>%
   add_xy_position(x = "responder", dodge = 0.8)
 stat.test
 
 
 fertility.plot <-NULL
-fertility.plot <- ggplot(fertility_t, aes(x = responder, y = offspring)) + #loads data and sets some of the aesthetic groupings (i.e. GAL4 variable on the x-axis, etc.)
-  geom_quasirandom(aes(colour = responder), method = "quasirandom", dodge.width = 0.5, width = 0.05, size = 1.7, alpha = 0.9) + #this adds the dots
-  stat_summary(aes(group = responder), fun.y = mean, fun.ymin = mean, fun.ymax = mean, geom = "crossbar", width = 0.6, size = 0.5, colour = "black", position = position_dodge(width = 0.7)) + #creates black bar for the mean of each group
-  scale_y_continuous(limits = c(0,250), name = "offspring", expand = c(0,0)) + #varies the y-axis
+fertility.plot <- ggplot(fertility_t, aes(x = responder, y = offspring)) + ##loads data and sets some of the aesthetic groupings such as placing the control and gRNA as x-axis variables
+  geom_quasirandom(aes(colour = responder), method = "quasirandom", dodge.width = 0.5, width = 0.05, size = 1.7, alpha = 0.9) + ## add the dots the the figure 
+  stat_summary(aes(group = responder), fun.y = mean, fun.ymin = mean, fun.ymax = mean, geom = "crossbar", width = 0.6, size = 0.5, colour = "black", position = position_dodge(width = 0.7)) + ## add a black bare for the mean
+  scale_y_continuous(limits = c(0,250), name = "offspring", expand = c(0,0)) + ## set the bounds for the Y axis 
   scale_x_discrete(name = NULL ) + #removes the name of the x-axis
   scale_colour_manual(values = c("royalblue2","red2")) + #changes the colours of the dots
-  facet_wrap(.~source, strip.position = "bottom") + 
-  #breaks up the plot into two parts based on the genes, and places gene name on bottom not top
-  theme(
+  facet_wrap(.~source, strip.position = "bottom") +   #breaks up the plot into two parts based on whether the Cas9 is expressed oogenically or spermatogenically, and places gene name on bottom not top
+  theme( ##changes to make the figure more pretty
     strip.placement = "outside",
     strip.background = element_blank(),
     strip.text = element_text(face = "bold")
   ) + #various theme changes  
   coord_cartesian(clip = "off")+
-  stat_pvalue_manual(stat.test, label = "{p.signif}", tip.length = 0,  hide.ns = FALSE)#removes clipping issues due to "expand" argument
+  stat_pvalue_manual(stat.test, label = "{p.adj.signif}", tip.length = 0,  hide.ns = FALSE)#removes clipping issues due to the "expand" and manually adds the bonferroni adjusted significants
 
 fertility.plot
