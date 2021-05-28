@@ -1,3 +1,4 @@
+##load in required packages 
 library(plyr)
 library(tidyr)
 library(ggplot2)
@@ -10,14 +11,10 @@ library(gridExtra)
 library("ggpubr")
 
 
-#set working direct
+#set working direct - this data has already been cleaned and is available on request. All raw simulation data is also available on requiest 
 setwd("~/Desktop/output/simulations_for_spartan/combination_data_sets/continuous")
 
 load("single.x_0.RData")
-
-single.x_0 = single.x_0[(single.x_0$drive_type == "SIT" | single.x_0$drive_type == "haplolethal"),]
-
-single.x_0 <- rbind(single.x_0, single_release.incursion.x_shredder)
 
 drive.type.vec <- c("SIT", "haplolethal", "x_shredder")
 ################################################################################
@@ -28,14 +25,14 @@ movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986) ##define vect
 pltList2 <- list(list(1,2,3,4,5), list(1,2,3,4,5), list(1,2,3,4,5)) ##create the list structure to hold figures 
 drive.type.vec <- c("SIT", "haplolethal", "x_shredder") ##create a vector of the different drive types 
 
-##iterate over each drive time and selected movement value and drive type
+##iterate over each drive type and selected movement value 
 for(i in 1:length(movement.vector)){
   for(j in 1:length(drive.type.vec)){
-    temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),]
+    temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),] ## create a temporary data frame that contains only the data pertaining to that iteration 
     temp = temp[(temp$movement == movement.vector[i]),]
     
     if(i==1 && j == 1){ ##specific positions within the list structure have axis titles
-      pltList2[[j]][[i]]<-temp %>%
+      pltList2[[j]][[i]]<-temp %>% ##figures are help in the structured list 
         ggplot(., aes(x=release_size, y=release_gen )) + ## the x axis is release sixe, y axis is release generation 
         geom_tile(aes(fill= fixed)) + ##fill is the proportion of simulations that went to fixation (population eradication)
         theme(
@@ -173,14 +170,13 @@ comb.figure
 #################################################################################################
 ########################################################################################################################
 
-movement.vector <- c(0.15, 0.181576, 0.221046, 0.260516, 0.299986) ##create a vector of movement speeds
 pltList2 <- list(list(1,2,3,4,5), list(1,2,3,4,5)) ## as SIT cannot persist, the list only has two rows of 5
 drive.type.vec <- c("haplolethal", "x_shredder") ## as only the X shredder and haplolethal drive can persist within the population, the drive type vecter only include the two
 
 ##iterate over this for each drive typre within the drive vector and for each movement speed
 for(i in 1:length(movement.vector)){
   for(j in 1:length(drive.type.vec)){
-    temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),]
+    temp = single.x_0[(single.x_0$drive_type == drive.type.vec[j]),] ## create a temporary data frame that contains only the data pertaining to that iteration 
     temp = temp[(temp$movement == movement.vector[i]),]
     
     if(i==2 && j == 1){##specific figures have different axis titles or figure titles 
