@@ -22,8 +22,7 @@ stat.test <- NULL
 stat.test <- fertility_t %>%
   group_by(source)%>%
   t_test(offspring~responder)%>%
-  adjust_pvalue(method = "bonferroni") %>%
-  add_significance("p.adj")%>%
+  add_significance("p")%>%
   add_xy_position(x = "responder", dodge = 0.8)
 stat.test
 
@@ -42,6 +41,6 @@ fertility.plot <- ggplot(fertility_t, aes(x = responder, y = offspring)) + ##loa
     strip.text = element_text(face = "bold")
   ) + #various theme changes  
   coord_cartesian(clip = "off")+
-  stat_pvalue_manual(stat.test, label = "{p.adj.signif}", tip.length = 0,  hide.ns = FALSE)#removes clipping issues due to the "expand" and manually adds the bonferroni adjusted significants
+  stat_pvalue_manual(stat.test, label = "{p.adj.signif}", tip.length = 0,  hide.ns = FALSE)#removes clipping issues due to the "expand" and manually adds the p value
 
 fertility.plot
