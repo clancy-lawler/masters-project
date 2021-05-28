@@ -41,6 +41,6 @@ fertility.plot <- ggplot(fertility_t, aes(x = responder, y = offspring)) + ##loa
     strip.text = element_text(face = "bold")
   ) + #various theme changes  
   coord_cartesian(clip = "off")+
-  stat_pvalue_manual(stat.test, label = "{p.adj.signif}", tip.length = 0,  hide.ns = FALSE)#removes clipping issues due to the "expand" and manually adds the p value
+  stat_pvalue_manual(stat.test, label = "{p.signif}", tip.length = 0,  hide.ns = FALSE)#removes clipping issues due to the "expand" and manually adds the p value
 
 fertility.plot
